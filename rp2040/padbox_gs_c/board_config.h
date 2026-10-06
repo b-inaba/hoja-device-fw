@@ -14,6 +14,10 @@
 #define HOJA_TRANSPORT_JOYBUSGC_DRIVER  JOYBUS_GC_DRIVER_HAL
 #define HOJA_TRANSPORT_NESBUS_DRIVER    NESBUS_DRIVER_HAL
 
+// No boot-mode hold: WUP-028 USB, with native GameCube auto-detection until
+// a USB host enumerates. Explicit boot holds retain their normal meanings.
+#define HOJA_BOOT_AUTO_GAMECUBE_USB 1
+
 #define ADC_SMOOTHING_STRENGTH      0
 
 // RGB gate + compile-time sizing. Layout/groups/key-mappings live in main.c.

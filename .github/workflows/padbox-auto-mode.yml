@@ -1,0 +1,41 @@
+name: Build Padbox auto mode
+
+on:
+  push:
+    branches: [padbox-auto-mode]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - name: Install build tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake ninja-build gcc-arm-none-eabi libnewlib-arm-none-eabi libstdc++-arm-none-eabi-newlib
+      - name: Check boot selection
+        run: bash tests/run-padbox-boot-tests.sh
+      - name: Get Pico SDK 2.2.0
+        run: |
+          git clone --depth 1 --branch 2.2.0 https://github.com/raspberrypi/pico-sdk.git "$RUNNER_TEMP/pico-sdk"
+          git -C "$RUNNER_TEMP/pico-sdk" submodule update --init --depth 1 lib/tinyusb
+      - name: Configure
+        run: cmake -S rp2040 -B build -G Ninja -DPICO_SDK_PATH="$RUNNER_TEMP/pico-sdk" -DCMAKE_BUILD_TYPE=Release
+      - name: Build Padbox
+        run: cmake --build build --target padbox_gs_c --parallel 2
+      - uses: actions/upload-artifact@v4
+        with:
+          name: padbox-gs-c-auto-mode
+          path: |
+            builds/padbox_gs_c/padbox_gs_c.uf2
+            builds/padbox_gs_c/padbox_gs_c.bin
+            builds/padbox_gs_c/manifest.json
+          if-no-files-found: error
